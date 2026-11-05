@@ -28,6 +28,12 @@ build:
           - cp ${RECIPE_DIR}/cargo-auditable-wrapper.sh ${BUILD_PREFIX}/bin/cargo-auditable-wrapper
         else:
           - copy %RECIPE_DIR%\cargo-auditable-wrapper.bat %BUILD_PREFIX%\Library\bin\cargo-auditable-wrapper.bat
+      # aws-lc-sys only assembles its GAS-syntax aarch64 .S sources with clang-cl. It falls
+      # back to clang-cl on its own only when CC is unset, but the vs2022 activation sets
+      # CC_aarch64_pc_windows_msvc=cl.exe, which drops the .S files and fails with LNK1181.
+      - if: target_platform == "win-arm64"
+        then:
+          - set "AWS_LC_SYS_CC=clang-cl"
       - python -m pip install . -vv --no-deps --no-build-isolation
       - cd client
       - cargo-bundle-licenses --format yaml --output ../THIRD_PARTY.yml
@@ -40,6 +46,10 @@ requirements:
     - cargo-auditable
     - cargo-bundle-licenses
     - libprotobuf
+    - if: target_platform == "win-arm64"
+      then:
+        # provides clang-cl, needed to assemble the aarch64 sources of aws-lc-sys
+        - clang
     - if: build_platform != target_platform
       then:
         - python
