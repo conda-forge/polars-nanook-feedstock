@@ -1,9 +1,8 @@
 context:
-  name: polars-nanook
   version: 0.13.0
 
 package:
-  name: ${{ name|lower }}
+  name: polars-nanook
   version: ${{ version }}
 
 source:
